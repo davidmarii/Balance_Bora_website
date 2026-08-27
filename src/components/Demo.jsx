@@ -16,79 +16,92 @@ import {
   RefreshCw,
   TrendingDown,
   TrendingUp,
-  DollarSign,
   Scale,
-  Search,
   Users,
-  Milk,
+  Wallet,
   Info,
-  AlertTriangle,
-  ChevronDown,
   Languages,
-  Save,
+  MessageCircle,
+  Pencil,
+  Plus,
+  Trash2,
+  Lightbulb,
+  Milk,
 } from 'lucide-react'
 
 /*
-  BalanceBora Farmer Feed Formulator
-  ----------------------------------
-  This component is intentionally self-contained.
+  ============================================================
+  BALANCE BORA - FARMER FEED FORMULATOR
+  ============================================================
 
-  Current version:
-  - Mobile-first farmer interface
-  - Animal selection
-  - Number of animals
-  - Production / body weight
-  - Ingredient selection
-  - Ingredient search
-  - Budget
-  - Demonstration ration calculation
-  - Nutrient and cost summary
+  This component is:
+  - Mobile friendly
+  - English / Kiswahili
+  - Farmer-friendly
+  - Editable feed prices
+  - WhatsApp sharing
+  - Simple "Why this feed?" explanation
+  - Designed so a real formulation API can replace the
+    demonstration formulation engine later.
 
   IMPORTANT:
-  The current formulation calculation is a demonstration.
-  The next version should use a proper least-cost linear programming
-  engine with scientifically validated nutrient requirements,
-  ingredient constraints and inclusion limits.
+  The current formulation engine is a DEMONSTRATION algorithm.
+  It should not yet be presented as a scientifically validated
+  least-cost ration.
 */
+
+/* ============================================================
+   ANIMALS
+============================================================ */
 
 const animals = [
   {
     id: 'dairy-cow',
     name: 'Dairy Cow',
+    sw: 'Ng’ombe wa maziwa',
     icon: Beef,
-    desc: 'Lactating cow',
-    defaultProduction: 10,
-    productionLabel: 'Milk per day',
-    productionUnit: 'L/day',
-    stage: 'Lactating',
+    desc: 'Milk-producing cow',
+    swDesc: 'Ng’ombe anayetoa maziwa',
+    stages: ['Early lactation', 'Mid lactation', 'Late lactation'],
+    swStages: ['Mwanzo wa kunyonyesha', 'Katikati ya kunyonyesha', 'Mwisho wa kunyonyesha'],
   },
   {
     id: 'goat',
     name: 'Dairy Goat',
+    sw: 'Mbuzi wa maziwa',
     icon: Rabbit,
-    desc: 'Lactating goat',
-    defaultProduction: 3,
-    productionLabel: 'Milk per day',
-    productionUnit: 'L/day',
-    stage: 'Lactating',
+    desc: 'Milk-producing goat',
+    swDesc: 'Mbuzi anayetoa maziwa',
+    stages: ['Early lactation', 'Mid lactation', 'Late lactation'],
+    swStages: ['Mwanzo wa kunyonyesha', 'Katikati ya kunyonyesha', 'Mwisho wa kunyonyesha'],
   },
   {
     id: 'sheep',
     name: 'Meat Sheep',
+    sw: 'Kondoo wa nyama',
     icon: Dog,
-    desc: 'Growing sheep',
-    defaultProduction: 30,
-    productionLabel: 'Body weight',
-    productionUnit: 'kg',
-    stage: 'Growing',
+    desc: 'Growing or finishing sheep',
+    swDesc: 'Kondoo anayekua au kunenepeshwa',
+    stages: ['Growing', 'Finishing', 'Maintenance'],
+    swStages: ['Anayekua', 'Anayenepeshwa', 'Matunzo'],
   },
 ]
 
-const feeds = [
+/* ============================================================
+   FEEDS
+   price = KES per kg
+   dm = dry matter percentage
+   cp = crude protein percentage
+   energy = simplified energy value
+============================================================ */
+
+const defaultFeeds = [
   {
     id: 'napier',
     name: 'Napier Grass',
+    sw: 'Nyasi za Napier',
     type: 'Forage',
+    swType: 'Malisho ya kijani',
     price: 8,
     dm: 18,
     cp: 10,
@@ -98,7 +111,9 @@ const feeds = [
   {
     id: 'maize-silage',
     name: 'Maize Silage',
+    sw: 'Silaji ya mahindi',
     type: 'Forage',
+    swType: 'Malisho',
     price: 12,
     dm: 30,
     cp: 8,
@@ -108,7 +123,9 @@ const feeds = [
   {
     id: 'dairy-meal',
     name: 'Dairy Meal',
+    sw: 'Dairy meal',
     type: 'Concentrate',
+    swType: 'Mchanganyiko wa lishe',
     price: 45,
     dm: 88,
     cp: 18,
@@ -118,7 +135,9 @@ const feeds = [
   {
     id: 'sunflower',
     name: 'Sunflower Cake',
+    sw: 'Mashudu ya alizeti',
     type: 'Protein',
+    swType: 'Chanzo cha protini',
     price: 35,
     dm: 90,
     cp: 32,
@@ -128,7 +147,9 @@ const feeds = [
   {
     id: 'wheat-bran',
     name: 'Wheat Bran',
+    sw: 'Pumba za ngano',
     type: 'Concentrate',
+    swType: 'Mchanganyiko wa lishe',
     price: 22,
     dm: 89,
     cp: 15,
@@ -138,7 +159,9 @@ const feeds = [
   {
     id: 'fish-meal',
     name: 'Fish Meal',
+    sw: 'Unga wa samaki',
     type: 'Protein',
+    swType: 'Chanzo cha protini',
     price: 85,
     dm: 92,
     cp: 55,
@@ -148,7 +171,9 @@ const feeds = [
   {
     id: 'molasses',
     name: 'Molasses',
+    sw: 'Molasi',
     type: 'Energy',
+    swType: 'Chanzo cha nishati',
     price: 18,
     dm: 75,
     cp: 4,
@@ -158,7 +183,9 @@ const feeds = [
   {
     id: 'lucerne',
     name: 'Lucerne Hay',
+    sw: 'Hay ya Lucerne',
     type: 'Forage',
+    swType: 'Malisho makavu',
     price: 25,
     dm: 90,
     cp: 18,
@@ -167,147 +194,280 @@ const feeds = [
   },
 ]
 
+/* ============================================================
+   BASIC REQUIREMENTS
+============================================================ */
+
 const requirements = {
   'dairy-cow': {
-    baseDM: 18,
+    dm: 18,
     cp: 16,
     energy: 2.8,
     name: 'Dairy Cow',
+    sw: 'Ng’ombe wa maziwa',
+    defaultWeight: 450,
+    defaultMilk: 15,
   },
+
   goat: {
-    baseDM: 3.5,
+    dm: 3.5,
     cp: 14,
     energy: 2.6,
     name: 'Dairy Goat',
+    sw: 'Mbuzi wa maziwa',
+    defaultWeight: 45,
+    defaultMilk: 3,
   },
+
   sheep: {
-    baseDM: 2.0,
+    dm: 2.0,
     cp: 13,
     energy: 2.4,
     name: 'Meat Sheep',
+    sw: 'Kondoo wa nyama',
+    defaultWeight: 30,
+    defaultMilk: 0,
   },
 }
+
+/* ============================================================
+   TRANSLATIONS
+============================================================ */
 
 const translations = {
   en: {
-    formulator: 'Feed Formulator',
+    calculator: 'Feed Calculator',
+    title: 'Make a Better Feed Plan',
     subtitle:
-      'Create an affordable ration using ingredients available on your farm.',
-    animal: '1. Choose your animal',
-    animals: 'animals',
-    next: 'Continue',
+      'Tell us about your animals and the feeds you have. We will estimate a practical daily feed plan and cost.',
+    chooseAnimal: 'What animal are you feeding?',
+    chooseAnimalHelp: 'Choose the animal you want to prepare feed for.',
+    numberAnimals: 'How many animals do you have?',
+    bodyWeight: 'Average body weight',
+    milkProduction: 'Milk produced per day',
+    productionStage: 'Production stage',
+    next: 'Next',
     back: 'Back',
-    production: '2. Tell us about your animals',
-    numberAnimals: 'Number of animals',
-    production: 'Production / body weight',
-    ingredients: '3. Select ingredients you have',
-    search: 'Search ingredients...',
-    selected: 'selected',
-    minimumIngredients: 'Select at least 3 ingredients.',
-    budgetTitle: '4. Set your feed budget',
-    dailyBudget: 'Daily feed budget',
-    formulate: 'Formulate Feed',
-    optimizing: 'Calculating...',
-    summary: 'Your farm summary',
-    result: 'Your feed plan',
-    totalCost: 'Total daily cost',
-    costPerAnimal: 'Cost per animal',
+    feedsTitle: 'What feeds do you have?',
+    feedsHelp: 'Select the ingredients that are available on your farm.',
+    selected: 'Selected',
+    price: 'Price',
+    editPrices: 'Edit feed prices',
+    hidePrices: 'Hide feed prices',
+    priceHelp: 'Enter the price you normally pay for each ingredient.',
+    perKg: '/kg',
+    addFeed: 'Add another feed',
+    feedName: 'Feed name',
+    add: 'Add',
+    cancel: 'Cancel',
+    remove: 'Remove',
+    budgetTitle: 'What is your feed budget?',
+    budgetHelp: 'Set your approximate budget per animal per day.',
+    perAnimalDay: 'per animal / day',
+    summary: 'Your choices',
+    animal: 'Animal',
+    animals: 'Animals',
+    ingredients: 'Ingredients',
+    budget: 'Budget',
+    makePlan: 'Make My Feed Plan',
+    preparing: 'Preparing your feed plan...',
+    planReady: 'Feed plan ready',
+    dailyPlan: 'Your Daily Feed Plan',
+    eachAnimal: 'For each animal',
+    wholeHerd: 'For your whole herd',
+    dailyCost: 'Daily cost',
+    totalHerdCost: 'Total herd cost',
+    protein: 'Protein',
+    energy: 'Energy',
     dryMatter: 'Dry matter',
-    crudeProtein: 'Crude protein',
-    energy: 'Energy density',
-    required: 'Target',
-    ration: 'Daily ration',
-    asFed: 'As-fed',
-    dryMatterShort: 'DM',
-    save: 'Save Feed',
-    another: 'Create Another Feed',
-    affordable: 'Under budget',
-    overBudget: 'Over budget',
-    warning: 'Please review this ration',
-    warningText:
-      'The selected ingredients may not provide enough nutrients to meet the target. This is a demonstration result and should be professionally validated before feeding animals.',
-    farmerTip: 'Farmer tip',
-    farmerTipText:
-      'Ingredient prices can strongly affect the cheapest ration. Keep your local prices updated for better recommendations.',
-    language: 'Language',
+    nutritionCheck: 'Nutrition check',
+    estimated: 'estimated',
+    underBudget: 'under budget',
+    overBudget: 'over budget',
+    whyFeed: 'Why did Balance Bora choose these feeds?',
+    explanation:
+      'The plan gives priority to feeds that can provide the required nutrients while considering their price. Higher-protein ingredients help supply protein, while forage and energy feeds provide bulk and energy.',
+    whatsapp: 'Share on WhatsApp',
+    another: 'Make Another Feed Plan',
+    demoNotice:
+      'This is a demonstration estimate. Actual feed requirements depend on animal weight, production, breed, feed quality and other factors. Always confirm important feeding decisions with a qualified animal nutrition professional.',
+    pricesSaved: 'Your feed prices are saved on this phone.',
+    selectMinimum: 'Select at least 3 ingredients.',
+    enterFeedName: 'Please enter a feed name.',
+    enterPrice: 'Please enter a valid price.',
+    kg: 'kg',
+    litres: 'litres',
+    day: 'day',
+    perDay: 'per day',
+    costPerAnimal: 'Cost / animal',
+    totalCost: 'Total cost',
+    savings: 'Budget difference',
+    available: 'Available on your farm',
+    edit: 'Edit',
   },
+
   sw: {
-    formulator: 'Kitengeneza Chakula',
+    calculator: 'Kikokotoo cha Chakula',
+    title: 'Tengeneza Mpango Bora wa Chakula',
     subtitle:
-      'Tengeneza mchanganyiko wa chakula kwa kutumia malighafi zinazopatikana shambani.',
-    animal: '1. Chagua mnyama',
-    animals: 'wanyama',
+      'Tuambie kuhusu mifugo yako na vyakula ulivyo navyo. Tutakusaidia kukadiria chakula cha kila siku na gharama.',
+    chooseAnimal: 'Unalisha mnyama gani?',
+    chooseAnimalHelp: 'Chagua mnyama ambaye unataka kumtengenezea chakula.',
+    numberAnimals: 'Una wanyama wangapi?',
+    bodyWeight: 'Uzito wa wastani',
+    milkProduction: 'Maziwa kwa siku',
+    productionStage: 'Hatua ya uzalishaji',
     next: 'Endelea',
     back: 'Rudi',
-    production: '2. Tueleze kuhusu wanyama wako',
-    numberAnimals: 'Idadi ya wanyama',
-    production: 'Uzalishaji / uzito',
-    ingredients: '3. Chagua malighafi ulizonazo',
-    search: 'Tafuta malighafi...',
-    selected: 'zimechaguliwa',
-    minimumIngredients: 'Chagua angalau malighafi 3.',
-    budgetTitle: '4. Weka bajeti ya chakula',
-    dailyBudget: 'Bajeti ya chakula kwa siku',
-    formulate: 'Tengeneza Chakula',
-    optimizing: 'Inahesabu...',
-    summary: 'Muhtasari wa shamba',
-    result: 'Mpango wako wa chakula',
-    totalCost: 'Gharama kwa siku',
-    costPerAnimal: 'Gharama kwa mnyama',
-    dryMatter: 'Mambo makavu',
-    crudeProtein: 'Protini ghafi',
+    feedsTitle: 'Una vyakula gani?',
+    feedsHelp: 'Chagua vyakula vilivyo kwenye shamba lako.',
+    selected: 'Imechaguliwa',
+    price: 'Bei',
+    editPrices: 'Badilisha bei za vyakula',
+    hidePrices: 'Ficha bei',
+    priceHelp: 'Weka bei unayolipa kwa kila chakula.',
+    perKg: '/kg',
+    addFeed: 'Ongeza chakula kingine',
+    feedName: 'Jina la chakula',
+    add: 'Ongeza',
+    cancel: 'Ghairi',
+    remove: 'Ondoa',
+    budgetTitle: 'Bajeti yako ya chakula ni kiasi gani?',
+    budgetHelp: 'Weka kiasi unachoweza kutumia kwa mnyama mmoja kwa siku.',
+    perAnimalDay: 'kwa mnyama / siku',
+    summary: 'Chaguo zako',
+    animal: 'Mnyama',
+    animals: 'Wanyama',
+    ingredients: 'Vyakula',
+    budget: 'Bajeti',
+    makePlan: 'Tengeneza Mpango Wangu',
+    preparing: 'Tunatengeneza mpango wako...',
+    planReady: 'Mpango wa chakula uko tayari',
+    dailyPlan: 'Mpango wa Chakula wa Kila Siku',
+    eachAnimal: 'Kwa kila mnyama',
+    wholeHerd: 'Kwa mifugo yote',
+    dailyCost: 'Gharama ya siku',
+    totalHerdCost: 'Gharama ya mifugo yote',
+    protein: 'Protini',
     energy: 'Nishati',
-    required: 'Lengo',
-    ration: 'Chakula cha kila siku',
-    asFed: 'Kiasi halisi',
-    dryMatterShort: 'DM',
-    save: 'Hifadhi Chakula',
-    another: 'Tengeneza Chakula Kingine',
-    affordable: 'Ndani ya bajeti',
-    overBudget: 'Juu ya bajeti',
-    warning: 'Kagua mchanganyiko huu',
-    warningText:
-      'Malighafi zilizochaguliwa huenda zisitoshe kukidhi mahitaji ya virutubisho. Haya ni makadirio ya majaribio na yanahitaji uthibitisho wa kitaalamu kabla ya kulisha wanyama.',
-    farmerTip: 'Ushauri kwa mkulima',
-    farmerTipText:
-      'Bei za malighafi zinaweza kubadilisha gharama ya chakula. Weka bei za eneo lako ili kupata mapendekezo bora.',
-    language: 'Lugha',
+    dryMatter: 'Kausha lishe',
+    nutritionCheck: 'Ukaguzi wa lishe',
+    estimated: 'makadirio',
+    underBudget: 'chini ya bajeti',
+    overBudget: 'juu ya bajeti',
+    whyFeed: 'Kwa nini Balance Bora imechagua vyakula hivi?',
+    explanation:
+      'Mpango unazingatia virutubisho vinavyohitajika na gharama ya vyakula. Vyakula vyenye protini nyingi husaidia kuongeza protini, huku malisho na vyakula vya nishati vikisaidia kutoa kiasi na nishati.',
+    whatsapp: 'Shiriki WhatsApp',
+    another: 'Tengeneza Mpango Mwingine',
+    demoNotice:
+      'Haya ni makadirio ya majaribio. Mahitaji halisi hutegemea uzito wa mnyama, uzalishaji, aina ya mnyama, ubora wa chakula na mambo mengine. Kwa maamuzi muhimu ya lishe, shauriana na mtaalamu wa lishe ya mifugo.',
+    pricesSaved: 'Bei zako zimehifadhiwa kwenye simu hii.',
+    selectMinimum: 'Chagua angalau vyakula 3.',
+    enterFeedName: 'Tafadhali weka jina la chakula.',
+    enterPrice: 'Tafadhali weka bei sahihi.',
+    kg: 'kg',
+    litres: 'lita',
+    day: 'siku',
+    perDay: 'kwa siku',
+    costPerAnimal: 'Gharama / mnyama',
+    totalCost: 'Gharama yote',
+    savings: 'Tofauti ya bajeti',
+    available: 'Inapatikana shambani',
+    edit: 'Badilisha',
   },
 }
 
+/* ============================================================
+   MAIN COMPONENT
+============================================================ */
+
 export default function Demo() {
-  const [step, setStep] = useState(1)
   const [language, setLanguage] = useState('en')
-
-  const [selectedAnimal, setSelectedAnimal] = useState(null)
-  const [animalCount, setAnimalCount] = useState(1)
-  const [production, setProduction] = useState(10)
-
-  const [selectedFeeds, setSelectedFeeds] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const [budget, setBudget] = useState(500)
-
-  const [result, setResult] = useState(null)
-  const [formulating, setFormulating] = useState(false)
 
   const t = translations[language]
 
-  const currentAnimal = animals.find(
-    (animal) => animal.id === selectedAnimal
+  const [step, setStep] = useState(1)
+
+  const [selectedAnimal, setSelectedAnimal] = useState(null)
+
+  const [numberOfAnimals, setNumberOfAnimals] = useState(1)
+
+  const [bodyWeight, setBodyWeight] = useState(450)
+
+  const [milkProduction, setMilkProduction] = useState(15)
+
+  const [productionStage, setProductionStage] = useState(0)
+
+  const [feeds, setFeeds] = useState(defaultFeeds)
+
+  const [selectedFeeds, setSelectedFeeds] = useState([])
+
+  const [editingPrices, setEditingPrices] = useState(false)
+
+  const [budget, setBudget] = useState(200)
+
+  const [result, setResult] = useState(null)
+
+  const [formulating, setFormulating] = useState(false)
+
+  const [showAddFeed, setShowAddFeed] = useState(false)
+
+  const [newFeedName, setNewFeedName] = useState('')
+
+  const [newFeedPrice, setNewFeedPrice] = useState('')
+
+  /* ==========================================================
+     CURRENT ANIMAL
+  ========================================================== */
+
+  const currentAnimal = useMemo(
+    () => animals.find((animal) => animal.id === selectedAnimal),
+    [selectedAnimal]
   )
 
-  const filteredFeeds = useMemo(() => {
-    const query = searchTerm.toLowerCase().trim()
+  const currentRequirement = selectedAnimal
+    ? requirements[selectedAnimal]
+    : null
 
-    if (!query) return feeds
+  /* ==========================================================
+     LANGUAGE SWITCH
+  ========================================================== */
 
-    return feeds.filter(
-      (feed) =>
-        feed.name.toLowerCase().includes(query) ||
-        feed.type.toLowerCase().includes(query)
+  const switchLanguage = () => {
+    setLanguage((previous) =>
+      previous === 'en' ? 'sw' : 'en'
     )
-  }, [searchTerm])
+  }
+
+  /* ==========================================================
+     ANIMAL SELECTION
+  ========================================================== */
+
+  const handleAnimalSelect = (animalId) => {
+    setSelectedAnimal(animalId)
+
+    const req = requirements[animalId]
+
+    setBodyWeight(req.defaultWeight)
+
+    setMilkProduction(req.defaultMilk)
+
+    setProductionStage(0)
+
+    const defaultAnimals =
+      animalId === 'dairy-cow'
+        ? 1
+        : animalId === 'goat'
+          ? 2
+          : 3
+
+    setNumberOfAnimals(defaultAnimals)
+  }
+
+  /* ==========================================================
+     FEED SELECTION
+  ========================================================== */
 
   const toggleFeed = (feedId) => {
     setSelectedFeeds((previous) =>
@@ -317,542 +477,875 @@ export default function Demo() {
     )
   }
 
-  const handleAnimalSelect = (animalId) => {
-    const animal = animals.find((item) => item.id === animalId)
+  /* ==========================================================
+     PRICE CHANGE
+  ========================================================== */
 
-    setSelectedAnimal(animalId)
-    setProduction(animal?.defaultProduction || 10)
-    setResult(null)
+  const updateFeedPrice = (feedId, price) => {
+    const numericPrice = Number(price)
+
+    if (Number.isNaN(numericPrice)) return
+
+    setFeeds((previous) =>
+      previous.map((feed) =>
+        feed.id === feedId
+          ? {
+              ...feed,
+              price: numericPrice,
+            }
+          : feed
+      )
+    )
   }
 
+  /* ==========================================================
+     ADD CUSTOM FEED
+  ========================================================== */
+
+  const addCustomFeed = () => {
+    const cleanName = newFeedName.trim()
+
+    const numericPrice = Number(newFeedPrice)
+
+    if (!cleanName) {
+      window.alert(t.enterFeedName)
+      return
+    }
+
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      window.alert(t.enterPrice)
+      return
+    }
+
+    const id = `custom-${Date.now()}`
+
+    const customFeed = {
+      id,
+      name: cleanName,
+      sw: cleanName,
+      type: 'Other',
+      swType: 'Nyingine',
+      price: numericPrice,
+      dm: 88,
+      cp: 12,
+      energy: 2.4,
+      icon: Sprout,
+      custom: true,
+    }
+
+    setFeeds((previous) => [
+      ...previous,
+      customFeed,
+    ])
+
+    setSelectedFeeds((previous) => [
+      ...previous,
+      id,
+    ])
+
+    setNewFeedName('')
+    setNewFeedPrice('')
+    setShowAddFeed(false)
+  }
+
+  /* ==========================================================
+     REMOVE CUSTOM FEED
+  ========================================================== */
+
+  const removeCustomFeed = (feedId) => {
+    setFeeds((previous) =>
+      previous.filter((feed) => feed.id !== feedId)
+    )
+
+    setSelectedFeeds((previous) =>
+      previous.filter((id) => id !== feedId)
+    )
+  }
+
+  /* ==========================================================
+     FORMULATION ENGINE
+  ========================================================== */
+
   const handleFormulate = () => {
-    if (!selectedAnimal || selectedFeeds.length < 3) return
+    if (!selectedAnimal || selectedFeeds.length < 3) {
+      return
+    }
 
     setFormulating(true)
 
+    /*
+      Small delay gives the farmer feedback that the system
+      is working.
+    */
+
     setTimeout(() => {
       const animalReq = requirements[selectedAnimal]
-
-      /*
-        Demonstration scaling.
-
-        In the production version, requirements should be calculated
-        from validated equations based on:
-        - body weight
-        - milk production
-        - physiological stage
-        - breed
-        - environmental conditions
-      */
-
-      let dmPerAnimal = animalReq.baseDM
-
-      if (selectedAnimal === 'dairy-cow') {
-        dmPerAnimal = Math.max(
-          10,
-          Math.min(22, 12 + production * 0.4)
-        )
-      }
-
-      if (selectedAnimal === 'goat') {
-        dmPerAnimal = Math.max(
-          2,
-          Math.min(5, 2.4 + production * 0.35)
-        )
-      }
-
-      if (selectedAnimal === 'sheep') {
-        dmPerAnimal = Math.max(
-          1.2,
-          Math.min(2.5, production * 0.03)
-        )
-      }
-
-      const totalRequiredDM = dmPerAnimal * animalCount
 
       const chosenFeeds = feeds.filter((feed) =>
         selectedFeeds.includes(feed.id)
       )
 
       /*
-        Demonstration allocation.
+        Demonstration calculation.
 
-        Cheaper ingredients receive a larger share while ensuring
-        several selected ingredients are represented.
+        The real Balance Bora formulation engine should later
+        replace this block with a proper least-cost optimization
+        model using nutrient constraints.
       */
 
-      const sortedFeeds = [...chosenFeeds].sort(
-        (a, b) => a.price - b.price
-      )
+      let remainingDM = animalReq.dm
+
+      let totalCost = 0
+      let totalDM = 0
+      let totalCP = 0
+      let totalEnergy = 0
 
       const ration = []
 
-      let remainingDM = totalRequiredDM
+      /*
+        Give priority to feeds with a good energy/price ratio.
+      */
 
-      const baseShare = 1 / sortedFeeds.length
+      const sortedFeeds = [...chosenFeeds].sort(
+        (a, b) =>
+          b.energy / Math.max(b.price, 0.01) -
+          a.energy / Math.max(a.price, 0.01)
+      )
 
-      sortedFeeds.forEach((feed, index) => {
-        if (remainingDM <= 0) return
+      /*
+        Limit each selected ingredient to a reasonable share
+        of the ration for this demonstration.
+      */
 
-        let share = baseShare
+      for (const feed of sortedFeeds) {
+        if (remainingDM <= 0) break
 
-        if (feed.type === 'Protein') {
-          share = Math.max(0.12, baseShare)
-        }
+        const amountDM = Math.min(
+          remainingDM,
+          animalReq.dm * 0.4
+        )
 
-        if (index === sortedFeeds.length - 1) {
-          share = 1
-        }
+        /*
+          Convert dry matter to as-fed quantity.
+        */
 
-        let amount = totalRequiredDM * share
+        const asFedKg =
+          amountDM / Math.max(feed.dm / 100, 0.01)
 
-        if (index === sortedFeeds.length - 1) {
-          amount = remainingDM
-        }
-
-        amount = Math.min(amount, remainingDM)
-
-        const dryMatterFraction = feed.dm / 100
-
-        const asFedKg = amount / dryMatterFraction
-
-        const cost = asFedKg * feed.price
+        const cost =
+          asFedKg * Math.max(feed.price, 0)
 
         ration.push({
           ...feed,
-          amountDM: amount,
-          asFedKg,
-          cost,
-          percentage: (amount / totalRequiredDM) * 100,
+
+          dmAmount:
+            Math.round(amountDM * 10) / 10,
+
+          asFedAmount:
+            Math.round(asFedKg * 10) / 10,
+
+          cost:
+            Math.round(cost * 10) / 10,
+
+          percentage:
+            Math.round(
+              (amountDM / animalReq.dm) * 100
+            ),
         })
 
-        remainingDM -= amount
-      })
+        totalCost += cost
 
-      const totalCost = ration.reduce(
-        (sum, item) => sum + item.cost,
-        0
-      )
+        totalDM += amountDM
 
-      const totalDM = ration.reduce(
-        (sum, item) => sum + item.amountDM,
-        0
-      )
+        totalCP +=
+          (amountDM * feed.cp) / 100
 
-      const totalCP = ration.reduce(
-        (sum, item) => sum + item.amountDM * (item.cp / 100),
-        0
-      )
+        totalEnergy +=
+          amountDM * feed.energy
 
-      const totalEnergy = ration.reduce(
-        (sum, item) => sum + item.amountDM * item.energy,
-        0
-      )
+        remainingDM -= amountDM
+      }
 
       const cpPct =
-        totalDM > 0 ? (totalCP / totalDM) * 100 : 0
+        totalDM > 0
+          ? Math.round(
+              (totalCP / totalDM) *
+                100 *
+                10
+            ) / 10
+          : 0
 
       const energyDensity =
-        totalDM > 0 ? totalEnergy / totalDM : 0
-
-      const costPerAnimal =
-        animalCount > 0 ? totalCost / animalCount : 0
-
-      const dailyBudget = budget
-
-      const savings = dailyBudget - totalCost
-
-      const cpAdequacy =
-        animalReq.cp > 0
-          ? (cpPct / animalReq.cp) * 100
+        totalDM > 0
+          ? Math.round(
+              (totalEnergy / totalDM) *
+                10
+            ) / 10
           : 0
 
-      const energyAdequacy =
-        animalReq.energy > 0
-          ? (energyDensity / animalReq.energy) * 100
-          : 0
+      const herdCost =
+        totalCost * numberOfAnimals
 
-      const nutritionallyAdequate =
-        cpAdequacy >= 90 && energyAdequacy >= 90
+      const herdBudget =
+        budget * numberOfAnimals
+
+      const savings =
+        herdBudget - herdCost
 
       setResult({
         ration,
-        totalCost,
-        totalDM,
-        totalCP,
-        totalEnergy,
+
+        totalCost:
+          Math.round(totalCost * 10) / 10,
+
+        totalHerdCost:
+          Math.round(herdCost * 10) / 10,
+
+        totalDM:
+          Math.round(totalDM * 10) / 10,
+
+        totalHerdDM:
+          Math.round(
+            totalDM *
+              numberOfAnimals *
+              10
+          ) / 10,
+
+        totalCP:
+          Math.round(totalCP * 10) / 10,
+
+        totalEnergy:
+          Math.round(totalEnergy * 10) / 10,
+
         cpPct,
+
         energyDensity,
-        costPerAnimal,
-        savings,
-        nutritionallyAdequate,
-        cpAdequacy,
-        energyAdequacy,
-        requiredDM: totalRequiredDM,
-        dmPerAnimal,
+
+        savings:
+          Math.round(savings * 10) / 10,
+
+        costPerAnimal:
+          Math.round(totalCost * 10) / 10,
+
+        numberOfAnimals,
+
         req: animalReq,
-        animalCount,
+
+        weight: bodyWeight,
+
+        milk: milkProduction,
       })
 
       setFormulating(false)
-      setStep(5)
-    }, 1200)
+
+      setStep(4)
+    }, 1000)
   }
+
+  /* ==========================================================
+     WHATSAPP SHARING
+  ========================================================== */
+
+  const shareWhatsApp = () => {
+    if (!result) return
+
+    const animalName =
+      language === 'sw'
+        ? result.req.sw
+        : result.req.name
+
+    const rationText = result.ration
+      .map((item) => {
+        const name =
+          language === 'sw'
+            ? item.sw
+            : item.name
+
+        return `• ${name}: ${item.asFedAmount} kg`
+      })
+      .join('\n')
+
+    const message =
+      language === 'sw'
+        ? `🐄 BALANCE BORA - MPANGO WA CHAKULA
+
+Mnyama: ${animalName}
+Idadi: ${result.numberOfAnimals}
+Uzito wa wastani: ${result.weight} kg
+Maziwa: ${result.milk} lita/siku
+
+CHAKULA KWA KILA MNYAMA:
+${rationText}
+
+Gharama kwa mnyama: KES ${result.costPerAnimal}/siku
+Gharama ya mifugo yote: KES ${result.totalHerdCost}/siku
+
+Protini: ${result.cpPct}%
+
+Huu ni mpango wa makadirio kutoka Balance Bora.`
+        : `🐄 BALANCE BORA - FEED PLAN
+
+Animal: ${animalName}
+Number: ${result.numberOfAnimals}
+Average weight: ${result.weight} kg
+Milk: ${result.milk} litres/day
+
+FEED PER ANIMAL:
+${rationText}
+
+Cost per animal: KES ${result.costPerAnimal}/day
+Total herd cost: KES ${result.totalHerdCost}/day
+
+Protein: ${result.cpPct}%
+
+This is an estimated plan from Balance Bora.`
+
+    const url =
+      `https://wa.me/?text=${encodeURIComponent(message)}`
+
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  /* ==========================================================
+     RESET
+  ========================================================== */
 
   const reset = () => {
     setStep(1)
     setSelectedAnimal(null)
-    setAnimalCount(1)
-    setProduction(10)
+    setNumberOfAnimals(1)
+    setBodyWeight(450)
+    setMilkProduction(15)
+    setProductionStage(0)
     setSelectedFeeds([])
-    setSearchTerm('')
-    setBudget(500)
+    setBudget(200)
     setResult(null)
+    setFormulating(false)
   }
 
-  const canContinueFromStep1 =
-    selectedAnimal && animalCount > 0 && production > 0
-
-  const canContinueFromStep2 = selectedFeeds.length >= 3
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <section
       id="demo"
-      className="py-12 sm:py-20 lg:py-24 bg-white"
+      className="py-12 sm:py-16 lg:py-24 bg-white"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* HEADER */}
+        {/* ==================================================
+            HEADER
+        ================================================== */}
 
-        <div className="max-w-3xl mx-auto text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-bora-100 text-bora-800 rounded-full text-sm font-semibold mb-4">
-            <Calculator className="w-4 h-4" />
-            {t.formulator}
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
+
+          <div className="flex justify-center mb-4">
+
+            <button
+              type="button"
+              onClick={switchLanguage}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-earth-100 text-earth-700 text-sm font-semibold hover:bg-earth-200 transition-colors"
+            >
+              <Languages className="w-4 h-4" />
+
+              {language === 'en'
+                ? 'Kiswahili'
+                : 'English'}
+            </button>
+
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-earth-900 mb-4">
-            {t.formulator}
+          <span className="inline-flex items-center px-4 py-2 bg-bora-100 text-bora-800 rounded-full text-sm font-semibold mb-4">
+
+            <Calculator className="w-4 h-4 mr-2" />
+
+            {t.calculator}
+
+          </span>
+
+          <h2 className="text-3xl sm:text-4xl font-bold text-earth-900 mb-4">
+            {t.title}
           </h2>
 
           <p className="text-earth-600 text-base sm:text-lg leading-relaxed">
             {t.subtitle}
           </p>
 
-          {/* LANGUAGE */}
-
-          <div className="flex justify-center mt-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-earth-200 bg-earth-50 p-1">
-              <Languages className="w-4 h-4 text-earth-500 ml-2" />
-
-              <button
-                type="button"
-                onClick={() => setLanguage('en')}
-                className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition ${
-                  language === 'en'
-                    ? 'bg-bora-600 text-white'
-                    : 'text-earth-600'
-                }`}
-              >
-                English
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLanguage('sw')}
-                className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition ${
-                  language === 'sw'
-                    ? 'bg-bora-600 text-white'
-                    : 'text-earth-600'
-                }`}
-              >
-                Kiswahili
-              </button>
-            </div>
-          </div>
         </div>
 
-        {/* PROGRESS */}
+        {/* ==================================================
+            PROGRESS
+        ================================================== */}
 
-        <div className="max-w-3xl mx-auto mb-8">
-          <div className="flex items-center justify-between gap-1 sm:gap-3">
-            {[1, 2, 3, 4, 5].map((s) => (
+        <div className="flex items-center justify-center mb-8 sm:mb-12">
+
+          {[1, 2, 3, 4].map((s) => (
+
+            <div
+              key={s}
+              className="flex items-center"
+            >
+
               <div
-                key={s}
-                className="flex items-center flex-1 last:flex-none"
+                className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${
+                  step >= s
+                    ? 'bg-bora-600 text-white shadow-lg'
+                    : 'bg-earth-100 text-earth-400'
+                }`}
               >
-                <div
-                  className={`w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all ${
-                    step >= s
-                      ? 'bg-bora-600 text-white shadow-md'
-                      : 'bg-earth-100 text-earth-400'
-                  }`}
-                >
-                  {step > s ? (
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                  ) : (
-                    s
-                  )}
-                </div>
 
-                {s < 5 && (
-                  <div
-                    className={`h-1 flex-1 mx-1 sm:mx-2 rounded-full ${
-                      step > s
-                        ? 'bg-bora-600'
-                        : 'bg-earth-100'
-                    }`}
-                  />
+                {step > s ? (
+                  <CheckCircle2 className="w-5 h-5" />
+                ) : (
+                  s
                 )}
+
               </div>
-            ))}
-          </div>
+
+              {s < 4 && (
+
+                <div
+                  className={`w-7 sm:w-12 h-0.5 mx-1 sm:mx-2 ${
+                    step > s
+                      ? 'bg-bora-600'
+                      : 'bg-earth-200'
+                  }`}
+                />
+
+              )}
+
+            </div>
+
+          ))}
+
         </div>
 
-        {/* MAIN CARD */}
+        {/* ==================================================
+            STEP 1 - ANIMAL
+        ================================================== */}
 
-        <div className="max-w-5xl mx-auto bg-white rounded-2xl sm:rounded-3xl border border-earth-200 shadow-sm overflow-hidden">
+        {step === 1 && (
 
-          {/* STEP 1 */}
+          <div>
 
-          {step === 1 && (
-            <div className="p-5 sm:p-8 lg:p-10">
+            <h3 className="text-xl sm:text-2xl font-bold text-earth-900 text-center mb-2">
+              {t.chooseAnimal}
+            </h3>
 
-              <div className="text-center mb-7">
-                <h3 className="text-xl sm:text-2xl font-bold text-earth-900">
-                  {t.animal}
-                </h3>
+            <p className="text-center text-earth-500 mb-8">
+              {t.chooseAnimalHelp}
+            </p>
 
-                <p className="text-earth-500 mt-2 text-sm sm:text-base">
-                  Choose the animal you want to feed.
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {animals.map((animal) => {
 
-                {animals.map((animal) => {
-                  const Icon = animal.icon
-                  const selected =
-                    selectedAnimal === animal.id
+                const Icon = animal.icon
 
-                  return (
-                    <button
-                      key={animal.id}
-                      type="button"
-                      onClick={() =>
-                        handleAnimalSelect(animal.id)
-                      }
-                      className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all active:scale-[0.99] ${
-                        selected
-                          ? 'border-bora-600 bg-bora-50 shadow-md'
-                          : 'border-earth-100 hover:border-bora-200 bg-white'
-                      }`}
-                    >
-                      {selected && (
-                        <div className="absolute top-4 right-4">
-                          <CheckCircle2 className="w-6 h-6 text-bora-600" />
-                        </div>
-                      )}
+                const selected =
+                  selectedAnimal === animal.id
 
-                      <div
-                        className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${
-                          selected
-                            ? 'bg-bora-600'
-                            : 'bg-earth-100'
-                        }`}
-                      >
-                        <Icon
-                          className={`w-7 h-7 ${
-                            selected
-                              ? 'text-white'
-                              : 'text-earth-500'
-                          }`}
-                        />
+                return (
+
+                  <button
+                    key={animal.id}
+                    type="button"
+                    onClick={() =>
+                      handleAnimalSelect(
+                        animal.id
+                      )
+                    }
+                    className={`relative p-5 sm:p-6 rounded-2xl border-2 text-left transition-all ${
+                      selected
+                        ? 'border-bora-600 bg-bora-50 shadow-md'
+                        : 'border-earth-100 hover:border-bora-200 hover:shadow-md'
+                    }`}
+                  >
+
+                    {selected && (
+
+                      <div className="absolute top-3 right-3">
+                        <CheckCircle2 className="w-6 h-6 text-bora-600" />
                       </div>
 
-                      <h4 className="text-lg font-bold text-earth-900">
-                        {animal.name}
-                      </h4>
+                    )}
 
-                      <p className="text-sm text-earth-500 mt-1">
-                        {animal.desc}
-                      </p>
+                    <div
+                      className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${
+                        selected
+                          ? 'bg-bora-600'
+                          : 'bg-earth-100'
+                      }`}
+                    >
 
-                      <span className="inline-block mt-3 px-3 py-1 bg-earth-100 text-earth-600 rounded-full text-xs font-medium">
-                        {animal.stage}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
+                      <Icon
+                        className={`w-7 h-7 ${
+                          selected
+                            ? 'text-white'
+                            : 'text-earth-500'
+                        }`}
+                      />
 
-              {selectedAnimal && (
-                <div className="mt-7 p-5 rounded-2xl bg-earth-50 border border-earth-100">
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <h4 className="text-lg font-bold text-earth-900">
+                      {language === 'sw'
+                        ? animal.sw
+                        : animal.name}
+                    </h4>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-earth-700 mb-2">
-                        <Users className="w-4 h-4 inline mr-1" />
-                        {t.numberAnimals}
-                      </label>
+                    <p className="text-sm text-earth-500 mt-1">
+                      {language === 'sw'
+                        ? animal.swDesc
+                        : animal.desc}
+                    </p>
+
+                  </button>
+
+                )
+              })}
+
+            </div>
+
+            {selectedAnimal && (
+
+              <div className="mt-6 bg-earth-50 rounded-2xl p-5 sm:p-6">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                  {/* NUMBER */}
+
+                  <div>
+
+                    <label className="block text-sm font-semibold text-earth-800 mb-2">
+                      {t.numberAnimals}
+                    </label>
+
+                    <div className="relative">
+
+                      <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bora-600" />
 
                       <input
                         type="number"
                         min="1"
                         max="1000"
-                        value={animalCount}
+                        value={numberOfAnimals}
                         onChange={(e) =>
-                          setAnimalCount(
+                          setNumberOfAnimals(
                             Math.max(
                               1,
-                              Number(e.target.value)
+                              Number(
+                                e.target.value
+                              )
                             )
                           )
                         }
-                        className="w-full px-4 py-3.5 rounded-xl border border-earth-200 bg-white text-earth-900 font-semibold focus:outline-none focus:ring-2 focus:ring-bora-500"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-earth-200 bg-white focus:outline-none focus:ring-2 focus:ring-bora-500"
                       />
+
                     </div>
 
+                  </div>
+
+                  {/* WEIGHT */}
+
+                  <div>
+
+                    <label className="block text-sm font-semibold text-earth-800 mb-2">
+                      {t.bodyWeight} ({t.kg})
+                    </label>
+
+                    <div className="relative">
+
+                      <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bora-600" />
+
+                      <input
+                        type="number"
+                        min="1"
+                        value={bodyWeight}
+                        onChange={(e) =>
+                          setBodyWeight(
+                            Math.max(
+                              1,
+                              Number(
+                                e.target.value
+                              )
+                            )
+                          )
+                        }
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-earth-200 bg-white focus:outline-none focus:ring-2 focus:ring-bora-500"
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* MILK */}
+
+                  {selectedAnimal !== 'sheep' && (
+
                     <div>
-                      <label className="block text-sm font-semibold text-earth-700 mb-2">
-                        {currentAnimal?.productionLabel}
+
+                      <label className="block text-sm font-semibold text-earth-800 mb-2">
+                        {t.milkProduction} ({t.litres})
                       </label>
 
                       <div className="relative">
+
+                        <Milk className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bora-600" />
+
                         <input
                           type="number"
                           min="0"
                           step="0.1"
-                          value={production}
+                          value={milkProduction}
                           onChange={(e) =>
-                            setProduction(
+                            setMilkProduction(
                               Math.max(
                                 0,
-                                Number(e.target.value)
+                                Number(
+                                  e.target.value
+                                )
                               )
                             )
                           }
-                          className="w-full px-4 py-3.5 pr-20 rounded-xl border border-earth-200 bg-white text-earth-900 font-semibold focus:outline-none focus:ring-2 focus:ring-bora-500"
+                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-earth-200 bg-white focus:outline-none focus:ring-2 focus:ring-bora-500"
                         />
 
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-earth-400">
-                          {currentAnimal?.productionUnit}
-                        </span>
                       </div>
+
                     </div>
 
+                  )}
+
+                  {/* STAGE */}
+
+                  <div>
+
+                    <label className="block text-sm font-semibold text-earth-800 mb-2">
+                      {t.productionStage}
+                    </label>
+
+                    <select
+                      value={productionStage}
+                      onChange={(e) =>
+                        setProductionStage(
+                          Number(e.target.value)
+                        )
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-earth-200 bg-white focus:outline-none focus:ring-2 focus:ring-bora-500"
+                    >
+
+                      {currentAnimal?.stages.map(
+                        (stage, index) => (
+
+                          <option
+                            key={stage}
+                            value={index}
+                          >
+                            {language === 'sw'
+                              ? currentAnimal.swStages[index]
+                              : stage}
+                          </option>
+
+                        )
+                      )}
+
+                    </select>
+
                   </div>
 
-                  <div className="flex items-start gap-2 mt-4 text-xs sm:text-sm text-earth-500">
-                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                    <p>
-                      These values help estimate the daily feed requirement.
-                      Final production recommendations should use validated
-                      animal nutrition equations.
-                    </p>
-                  </div>
                 </div>
-              )}
 
-              <div className="flex justify-end mt-7">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  disabled={!canContinueFromStep1}
-                  className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-7 py-3.5 bg-bora-600 text-white font-semibold rounded-xl sm:rounded-full hover:bg-bora-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t.next}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
               </div>
+
+            )}
+
+            <div className="flex justify-end mt-8">
+
+              <button
+                type="button"
+                disabled={!selectedAnimal}
+                onClick={() =>
+                  selectedAnimal &&
+                  setStep(2)
+                }
+                className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-7 py-3 bg-bora-600 text-white font-semibold rounded-full hover:bg-bora-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+
+                {t.next}
+
+                <ArrowRight className="w-5 h-5" />
+
+              </button>
+
             </div>
-          )}
 
-          {/* STEP 2 */}
+          </div>
 
-          {step === 2 && (
-            <div className="p-5 sm:p-8 lg:p-10">
+        )}
 
-              <div className="text-center mb-7">
-                <h3 className="text-xl sm:text-2xl font-bold text-earth-900">
-                  {t.ingredients}
-                </h3>
+        {/* ==================================================
+            STEP 2 - FEEDS
+        ================================================== */}
 
-                <p className="text-earth-500 mt-2 text-sm sm:text-base">
-                  Select ingredients that are available on your farm.
-                </p>
-              </div>
+        {step === 2 && (
 
-              {/* SEARCH */}
+          <div>
 
-              <div className="relative mb-5">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-earth-400" />
+            <h3 className="text-xl sm:text-2xl font-bold text-earth-900 text-center mb-2">
+              {t.feedsTitle}
+            </h3>
 
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) =>
-                    setSearchTerm(e.target.value)
-                  }
-                  placeholder={t.search}
-                  className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-earth-200 focus:outline-none focus:ring-2 focus:ring-bora-500"
-                />
-              </div>
+            <p className="text-center text-earth-500 mb-8">
+              {t.feedsHelp}
+            </p>
 
-              {/* SELECTED COUNT */}
+            {/* PRICE EDITOR */}
 
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-earth-600">
-                  <strong className="text-earth-900">
-                    {selectedFeeds.length}
-                  </strong>{' '}
-                  {t.selected}
+            <div className="mb-5">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setEditingPrices(
+                    (previous) => !previous
+                  )
+                }
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-earth-50 hover:bg-earth-100 transition-colors"
+              >
+
+                <span className="flex items-center gap-2 font-semibold text-earth-800">
+
+                  <Pencil className="w-4 h-4 text-bora-600" />
+
+                  {editingPrices
+                    ? t.hidePrices
+                    : t.editPrices}
+
                 </span>
 
-                {selectedFeeds.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedFeeds([])}
-                    className="text-xs sm:text-sm text-red-500 font-semibold"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+                <span className="text-sm text-earth-500">
+                  {editingPrices ? '−' : '+'}
+                </span>
 
-              {/* INGREDIENTS */}
+              </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {editingPrices && (
 
-                {filteredFeeds.map((feed) => {
-                  const Icon = feed.icon
-                  const selected =
-                    selectedFeeds.includes(feed.id)
+                <div className="mt-3 bg-earth-50 rounded-xl p-4">
 
-                  return (
-                    <button
-                      key={feed.id}
-                      type="button"
-                      onClick={() => toggleFeed(feed.id)}
-                      className={`relative p-4 rounded-xl border-2 text-left transition-all ${
-                        selected
-                          ? 'border-bora-600 bg-bora-50'
-                          : 'border-earth-100 bg-white hover:border-bora-200'
-                      }`}
-                    >
-                      {selected && (
-                        <div className="absolute top-3 right-3">
-                          <CheckCircle2 className="w-5 h-5 text-bora-600" />
+                  <p className="text-sm text-earth-500 mb-4">
+                    {t.priceHelp}
+                  </p>
+
+                  <div className="space-y-3">
+
+                    {feeds.map((feed) => (
+
+                      <div
+                        key={feed.id}
+                        className="flex items-center gap-3"
+                      >
+
+                        <span className="text-sm text-earth-700 flex-1">
+                          {language === 'sw'
+                            ? feed.sw
+                            : feed.name}
+                        </span>
+
+                        <div className="relative w-32">
+
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-earth-400">
+                            KES
+                          </span>
+
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={feed.price}
+                            onChange={(e) =>
+                              updateFeedPrice(
+                                feed.id,
+                                e.target.value
+                              )
+                            }
+                            className="w-full pl-12 pr-2 py-2 rounded-lg border border-earth-200 bg-white text-sm"
+                          />
+
                         </div>
+
+                        <span className="text-xs text-earth-400">
+                          {t.perKg}
+                        </span>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                  <p className="flex items-center gap-2 text-xs text-bora-700 mt-4">
+                    <CheckCircle2 className="w-4 h-4" />
+                    {t.pricesSaved}
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* FEED CARDS */}
+
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+              {feeds.map((feed) => {
+
+                const Icon = feed.icon
+
+                const selected =
+                  selectedFeeds.includes(feed.id)
+
+                return (
+
+                  <div
+                    key={feed.id}
+                    className={`relative rounded-xl border-2 transition-all ${
+                      selected
+                        ? 'border-bora-600 bg-bora-50'
+                        : 'border-earth-100 bg-white'
+                    }`}
+                  >
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleFeed(feed.id)
+                      }
+                      className="w-full p-4 text-left"
+                    >
+
+                      {selected && (
+
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-bora-600 rounded-full flex items-center justify-center">
+
+                          <CheckCircle2 className="w-4 h-4 text-white" />
+
+                        </div>
+
                       )}
 
                       <div
-                        className={`w-11 h-11 rounded-lg flex items-center justify-center mb-3 ${
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
                           selected
                             ? 'bg-bora-600'
                             : 'bg-earth-100'
                         }`}
                       >
+
                         <Icon
                           className={`w-5 h-5 ${
                             selected
@@ -860,721 +1353,792 @@ export default function Demo() {
                               : 'text-earth-500'
                           }`}
                         />
+
                       </div>
 
                       <h4 className="font-semibold text-earth-900 text-sm pr-5">
-                        {feed.name}
+                        {language === 'sw'
+                          ? feed.sw
+                          : feed.name}
                       </h4>
 
                       <p className="text-xs text-earth-500 mt-1">
-                        {feed.type}
+                        {language === 'sw'
+                          ? feed.swType
+                          : feed.type}
                       </p>
 
-                      <div className="mt-3 flex items-center gap-1">
-                        <DollarSign className="w-3.5 h-3.5 text-bora-600" />
-                        <span className="font-bold text-bora-700">
-                          KES {feed.price}
+                      <p className="text-sm font-bold text-bora-700 mt-2">
+                        KES {feed.price}
+                        <span className="font-normal text-xs text-earth-400">
+                          {t.perKg}
                         </span>
-                        <span className="text-xs text-earth-400">
-                          /kg
-                        </span>
-                      </div>
+                      </p>
 
-                      <div className="mt-2 flex gap-2 text-[11px] text-earth-500">
-                        <span>CP {feed.cp}%</span>
-                        <span>•</span>
-                        <span>DM {feed.dm}%</span>
-                      </div>
                     </button>
-                  )
-                })}
-              </div>
 
-              {filteredFeeds.length === 0 && (
-                <div className="text-center py-10 text-earth-500">
-                  No ingredients found.
-                </div>
-              )}
+                    {feed.custom && (
 
-              {selectedFeeds.length < 3 && (
-                <div className="flex items-center justify-center gap-2 mt-5 text-sm text-amber-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  {t.minimumIngredients}
-                </div>
-              )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeCustomFeed(
+                            feed.id
+                          )
+                        }
+                        className="absolute bottom-2 right-2 p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                        title={t.remove}
+                      >
 
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-7">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="inline-flex justify-center items-center gap-2 px-6 py-3.5 text-earth-600 font-semibold rounded-xl hover:bg-earth-50"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  {t.back}
-                </button>
+                        <Trash2 className="w-4 h-4" />
 
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  disabled={!canContinueFromStep2}
-                  className="inline-flex justify-center items-center gap-2 px-7 py-3.5 bg-bora-600 text-white font-semibold rounded-xl sm:rounded-full hover:bg-bora-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t.next}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
+                      </button>
+
+                    )}
+
+                  </div>
+
+                )
+              })}
+
             </div>
-          )}
 
-          {/* STEP 3 */}
+            {/* ADD CUSTOM FEED */}
 
-          {step === 3 && (
-            <div className="p-5 sm:p-8 lg:p-10 max-w-2xl mx-auto">
+            <div className="mt-5">
 
-              <div className="text-center mb-7">
-                <h3 className="text-xl sm:text-2xl font-bold text-earth-900">
-                  {t.budgetTitle}
-                </h3>
+              {!showAddFeed ? (
 
-                <p className="text-earth-500 mt-2 text-sm">
-                  Set the maximum amount you want to spend each day.
-                </p>
-              </div>
-
-              <div className="bg-earth-50 rounded-2xl p-5 sm:p-7">
-
-                <div className="flex items-center justify-between gap-4 mb-5">
-                  <span className="text-earth-600 font-medium">
-                    {t.dailyBudget}
-                  </span>
-
-                  <span className="text-2xl sm:text-3xl font-bold text-bora-700">
-                    KES {budget.toLocaleString()}
-                  </span>
-                </div>
-
-                <input
-                  type="range"
-                  min="50"
-                  max="5000"
-                  step="50"
-                  value={budget}
-                  onChange={(e) =>
-                    setBudget(Number(e.target.value))
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAddFeed(true)
                   }
-                  className="w-full h-2 bg-earth-200 rounded-full appearance-none cursor-pointer accent-bora-600"
-                />
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-bora-700 hover:text-bora-800"
+                >
 
-                <div className="flex justify-between mt-2 text-xs text-earth-400">
-                  <span>KES 50</span>
-                  <span>KES 5,000</span>
-                </div>
+                  <Plus className="w-4 h-4" />
 
-                <div className="mt-5">
-                  <label className="block text-sm font-semibold text-earth-700 mb-2">
-                    Or enter your budget
-                  </label>
+                  {t.addFeed}
 
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-earth-400">
-                      KES
-                    </span>
+                </button>
+
+              ) : (
+
+                <div className="bg-earth-50 rounded-xl p-4">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                    <input
+                      type="text"
+                      value={newFeedName}
+                      onChange={(e) =>
+                        setNewFeedName(
+                          e.target.value
+                        )
+                      }
+                      placeholder={t.feedName}
+                      className="px-4 py-3 rounded-xl border border-earth-200 bg-white"
+                    />
 
                     <input
                       type="number"
-                      min="50"
-                      value={budget}
+                      min="0"
+                      value={newFeedPrice}
                       onChange={(e) =>
-                        setBudget(
-                          Math.max(
-                            50,
-                            Number(e.target.value)
-                          )
+                        setNewFeedPrice(
+                          e.target.value
                         )
                       }
-                      className="w-full pl-14 pr-4 py-3.5 rounded-xl border border-earth-200 bg-white font-semibold focus:outline-none focus:ring-2 focus:ring-bora-500"
+                      placeholder="KES/kg"
+                      className="px-4 py-3 rounded-xl border border-earth-200 bg-white"
                     />
-                  </div>
-                </div>
-              </div>
 
-              {/* SUMMARY */}
+                    <div className="flex gap-2">
 
-              <div className="bg-bora-50 rounded-2xl p-5 mt-6">
-
-                <h4 className="font-bold text-earth-900 mb-4">
-                  {t.summary}
-                </h4>
-
-                <div className="space-y-3 text-sm">
-
-                  <div className="flex justify-between gap-4">
-                    <span className="text-earth-600">
-                      Animal
-                    </span>
-
-                    <span className="font-semibold text-earth-900">
-                      {currentAnimal?.name}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-4">
-                    <span className="text-earth-600">
-                      Number
-                    </span>
-
-                    <span className="font-semibold text-earth-900">
-                      {animalCount} {t.animals}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-4">
-                    <span className="text-earth-600">
-                      Production / weight
-                    </span>
-
-                    <span className="font-semibold text-earth-900">
-                      {production} {currentAnimal?.productionUnit}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-4">
-                    <span className="text-earth-600">
-                      Ingredients
-                    </span>
-
-                    <span className="font-semibold text-earth-900">
-                      {selectedFeeds.length}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-7">
-
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="inline-flex justify-center items-center gap-2 px-6 py-3.5 text-earth-600 font-semibold rounded-xl hover:bg-earth-50"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  {t.back}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setStep(4)}
-                  className="inline-flex justify-center items-center gap-2 px-7 py-3.5 bg-bora-600 text-white font-bold rounded-xl sm:rounded-full hover:bg-bora-700 transition shadow-lg"
-                >
-                  Review
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4 */}
-
-          {step === 4 && (
-            <div className="p-5 sm:p-8 lg:p-10 max-w-3xl mx-auto">
-
-              <div className="text-center mb-7">
-                <h3 className="text-xl sm:text-2xl font-bold text-earth-900">
-                  Review Your Farm Information
-                </h3>
-
-                <p className="text-earth-500 mt-2 text-sm">
-                  Check the information before generating your feed plan.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                <div className="rounded-2xl border border-earth-100 bg-earth-50 p-5">
-                  <p className="text-xs text-earth-500 mb-1">
-                    Animal
-                  </p>
-                  <p className="font-bold text-earth-900">
-                    {currentAnimal?.name}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-earth-100 bg-earth-50 p-5">
-                  <p className="text-xs text-earth-500 mb-1">
-                    Number of animals
-                  </p>
-                  <p className="font-bold text-earth-900">
-                    {animalCount}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-earth-100 bg-earth-50 p-5">
-                  <p className="text-xs text-earth-500 mb-1">
-                    Production / weight
-                  </p>
-                  <p className="font-bold text-earth-900">
-                    {production} {currentAnimal?.productionUnit}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-earth-100 bg-earth-50 p-5">
-                  <p className="text-xs text-earth-500 mb-1">
-                    Daily budget
-                  </p>
-                  <p className="font-bold text-bora-700">
-                    KES {budget.toLocaleString()}
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-earth-100 overflow-hidden">
-
-                <div className="px-5 py-4 bg-earth-50">
-                  <h4 className="font-bold text-earth-900">
-                    Selected ingredients
-                  </h4>
-                </div>
-
-                <div className="divide-y divide-earth-100">
-
-                  {feeds
-                    .filter((feed) =>
-                      selectedFeeds.includes(feed.id)
-                    )
-                    .map((feed) => (
-                      <div
-                        key={feed.id}
-                        className="flex items-center justify-between gap-4 px-5 py-3"
+                      <button
+                        type="button"
+                        onClick={addCustomFeed}
+                        className="flex-1 px-4 py-3 bg-bora-600 text-white rounded-xl font-semibold"
                       >
-                        <span className="font-medium text-earth-800">
-                          {feed.name}
-                        </span>
+                        {t.add}
+                      </button>
 
-                        <span className="text-sm text-bora-700 font-semibold">
-                          KES {feed.price}/kg
-                        </span>
-                      </div>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowAddFeed(false)
+                        }
+                        className="px-4 py-3 bg-earth-200 text-earth-700 rounded-xl"
+                      >
+                        {t.cancel}
+                      </button>
+
+                    </div>
+
+                  </div>
+
                 </div>
+
+              )}
+
+            </div>
+
+            <div className="mt-5 flex items-start gap-2 text-sm text-earth-500 bg-earth-50 rounded-xl p-4">
+
+              <Info className="w-4 h-4 shrink-0 mt-0.5 text-bora-600" />
+
+              <p>
+                {t.available}
+                {': '}
+                <strong>
+                  {selectedFeeds.length}
+                </strong>
+              </p>
+
+            </div>
+
+            {/* NAVIGATION */}
+
+            <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8">
+
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="inline-flex justify-center items-center gap-2 px-6 py-3 text-earth-600 font-semibold"
+              >
+
+                <ArrowLeft className="w-5 h-5" />
+
+                {t.back}
+
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  selectedFeeds.length < 3
+                }
+                onClick={() =>
+                  selectedFeeds.length >= 3 &&
+                  setStep(3)
+                }
+                className="inline-flex justify-center items-center gap-2 px-7 py-3 bg-bora-600 text-white font-semibold rounded-full disabled:opacity-50"
+              >
+
+                {t.next}
+
+                <ArrowRight className="w-5 h-5" />
+
+              </button>
+
+            </div>
+
+            {selectedFeeds.length < 3 && (
+
+              <p className="text-center text-sm text-amber-600 mt-3">
+                {t.selectMinimum}
+              </p>
+
+            )}
+
+          </div>
+
+        )}
+
+        {/* ==================================================
+            STEP 3 - BUDGET
+        ================================================== */}
+
+        {step === 3 && (
+
+          <div className="max-w-xl mx-auto">
+
+            <h3 className="text-xl sm:text-2xl font-bold text-earth-900 text-center mb-2">
+              {t.budgetTitle}
+            </h3>
+
+            <p className="text-center text-earth-500 mb-8">
+              {t.budgetHelp}
+            </p>
+
+            <div className="bg-earth-50 rounded-2xl p-5 sm:p-8 mb-6">
+
+              <div className="flex items-center gap-3 mb-6">
+
+                <Wallet className="w-7 h-7 text-bora-600" />
+
+                <div>
+
+                  <p className="text-sm text-earth-500">
+                    {t.perAnimalDay}
+                  </p>
+
+                  <p className="text-3xl font-bold text-bora-700">
+                    KES {budget}
+                  </p>
+
+                </div>
+
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-7">
+              <input
+                type="range"
+                min="50"
+                max="1000"
+                step="10"
+                value={budget}
+                onChange={(e) =>
+                  setBudget(
+                    Number(e.target.value)
+                  )
+                }
+                className="w-full h-2 bg-earth-200 rounded-full appearance-none cursor-pointer accent-bora-600"
+              />
 
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="inline-flex justify-center items-center gap-2 px-6 py-3.5 text-earth-600 font-semibold rounded-xl hover:bg-earth-50"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  {t.back}
-                </button>
+              <div className="flex justify-between mt-2 text-sm text-earth-400">
 
-                <button
-                  type="button"
-                  onClick={handleFormulate}
-                  disabled={formulating}
-                  className="inline-flex justify-center items-center gap-2 px-7 py-4 bg-bora-600 text-white font-bold rounded-xl sm:rounded-full hover:bg-bora-700 transition shadow-lg disabled:opacity-60"
+                <span>KES 50</span>
+
+                <span>KES 1,000</span>
+
+              </div>
+
+            </div>
+
+            {/* SUMMARY */}
+
+            <div className="bg-bora-50 rounded-xl p-5 mb-8">
+
+              <h4 className="font-semibold text-earth-900 mb-4">
+                {t.summary}
+              </h4>
+
+              <div className="space-y-3 text-sm">
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-earth-600">
+                    {t.animal}
+                  </span>
+
+                  <span className="font-semibold text-earth-900">
+                    {language === 'sw'
+                      ? currentRequirement?.sw
+                      : currentRequirement?.name}
+                  </span>
+
+                </div>
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-earth-600">
+                    {t.animals}
+                  </span>
+
+                  <span className="font-semibold text-earth-900">
+                    {numberOfAnimals}
+                  </span>
+
+                </div>
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-earth-600">
+                    {t.ingredients}
+                  </span>
+
+                  <span className="font-semibold text-earth-900">
+                    {selectedFeeds.length}
+                  </span>
+
+                </div>
+
+                <div className="flex justify-between gap-4">
+
+                  <span className="text-earth-600">
+                    {t.budget}
+                  </span>
+
+                  <span className="font-semibold text-bora-700">
+                    KES {budget}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* NAVIGATION */}
+
+            <div className="flex flex-col-reverse sm:flex-row justify-between gap-3">
+
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="inline-flex justify-center items-center gap-2 px-6 py-3 text-earth-600 font-semibold"
+              >
+
+                <ArrowLeft className="w-5 h-5" />
+
+                {t.back}
+
+              </button>
+
+              <button
+                type="button"
+                onClick={handleFormulate}
+                disabled={formulating}
+                className="inline-flex justify-center items-center gap-2 px-7 py-4 bg-bora-600 text-white font-bold rounded-full hover:bg-bora-700 disabled:opacity-60 shadow-lg"
+              >
+
+                {formulating ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+
+                    {t.preparing}
+                  </>
+                ) : (
+                  <>
+                    <Calculator className="w-5 h-5" />
+
+                    {t.makePlan}
+                  </>
+                )}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {/* ==================================================
+            STEP 4 - RESULTS
+        ================================================== */}
+
+        {step === 4 && result && (
+
+          <div>
+
+            {/* RESULT HEADER */}
+
+            <div className="text-center mb-8">
+
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-bora-100 text-bora-800 rounded-full text-sm font-semibold mb-4">
+
+                <CheckCircle2 className="w-4 h-4" />
+
+                {t.planReady}
+
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-bold text-earth-900">
+                {t.dailyPlan}
+              </h3>
+
+              <p className="text-earth-500 mt-2">
+
+                {result.numberOfAnimals}{' '}
+
+                {language === 'sw'
+                  ? result.req.sw
+                  : result.req.name}
+
+              </p>
+
+            </div>
+
+            {/* SUMMARY */}
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+
+              <div className="bg-earth-50 rounded-xl p-4 sm:p-5 text-center">
+
+                <p className="text-xs text-earth-500 mb-1">
+                  {t.costPerAnimal}
+                </p>
+
+                <p className="text-xl sm:text-2xl font-bold text-earth-900">
+                  KES {result.costPerAnimal}
+                </p>
+
+                <p className="text-xs text-earth-400 mt-1">
+                  {t.perDay}
+                </p>
+
+              </div>
+
+              <div className="bg-earth-50 rounded-xl p-4 sm:p-5 text-center">
+
+                <p className="text-xs text-earth-500 mb-1">
+                  {t.totalHerdCost}
+                </p>
+
+                <p className="text-xl sm:text-2xl font-bold text-earth-900">
+                  KES {result.totalHerdCost}
+                </p>
+
+                <p className="text-xs text-earth-400 mt-1">
+                  {t.perDay}
+                </p>
+
+              </div>
+
+              <div className="bg-earth-50 rounded-xl p-4 sm:p-5 text-center">
+
+                <p className="text-xs text-earth-500 mb-1">
+                  {t.protein}
+                </p>
+
+                <p className="text-xl sm:text-2xl font-bold text-earth-900">
+                  {result.cpPct}%
+                </p>
+
+                <p className="text-xs text-earth-400 mt-1">
+                  {t.estimated}
+                </p>
+
+              </div>
+
+              <div className="bg-earth-50 rounded-xl p-4 sm:p-5 text-center">
+
+                <p className="text-xs text-earth-500 mb-1">
+                  {t.savings}
+                </p>
+
+                <p
+                  className={`text-xl sm:text-2xl font-bold ${
+                    result.savings >= 0
+                      ? 'text-bora-700'
+                      : 'text-red-600'
+                  }`}
                 >
-                  {formulating ? (
+                  KES {Math.abs(result.savings)}
+                </p>
+
+                <p className="text-xs text-earth-400 mt-1 flex items-center justify-center gap-1">
+
+                  {result.savings >= 0 ? (
                     <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      {t.optimizing}
+                      <TrendingDown className="w-3 h-3" />
+                      {t.underBudget}
                     </>
                   ) : (
                     <>
-                      <Calculator className="w-5 h-5" />
-                      {t.formulate}
+                      <TrendingUp className="w-3 h-3" />
+                      {t.overBudget}
                     </>
                   )}
-                </button>
 
-              </div>
-            </div>
-          )}
-
-          {/* STEP 5 / RESULTS */}
-
-          {step === 5 && result && (
-            <div className="p-5 sm:p-8 lg:p-10">
-
-              {/* RESULT HEADER */}
-
-              <div className="text-center mb-7">
-
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-bora-100 text-bora-800 rounded-full text-sm font-semibold mb-4">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Feed plan created
-                </div>
-
-                <h3 className="text-2xl sm:text-3xl font-bold text-earth-900">
-                  {t.result}
-                </h3>
-
-                <p className="text-earth-500 mt-2">
-                  {currentAnimal?.name} • {result.animalCount}{' '}
-                  {t.animals}
                 </p>
 
               </div>
 
-              {/* WARNING */}
+            </div>
 
-              {!result.nutritionallyAdequate && (
-                <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            {/* RATION */}
 
-                  <div className="flex items-start gap-3">
+            <div className="bg-white rounded-2xl border border-earth-200 overflow-hidden mb-6">
 
-                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="px-4 sm:px-6 py-4 bg-earth-50 border-b border-earth-100">
 
-                    <div>
-                      <h4 className="font-bold text-amber-900">
-                        {t.warning}
-                      </h4>
+                <h4 className="font-bold text-earth-900">
+                  {t.eachAnimal}
+                </h4>
 
-                      <p className="text-sm text-amber-800 mt-1 leading-relaxed">
-                        {t.warningText}
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-
-              {/* TOP METRICS */}
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-7">
-
-                <div className="bg-earth-50 rounded-2xl p-4 sm:p-5 text-center">
-                  <p className="text-xs text-earth-500 mb-1">
-                    {t.totalCost}
-                  </p>
-
-                  <p className="text-xl sm:text-2xl font-bold text-earth-900">
-                    KES {result.totalCost.toFixed(0)}
-                  </p>
-
-                  <p
-                    className={`text-xs font-semibold mt-1 flex justify-center items-center gap-1 ${
-                      result.savings >= 0
-                        ? 'text-bora-600'
-                        : 'text-red-500'
-                    }`}
-                  >
-                    {result.savings >= 0 ? (
-                      <TrendingDown className="w-3 h-3" />
-                    ) : (
-                      <TrendingUp className="w-3 h-3" />
-                    )}
-
-                    {result.savings >= 0
-                      ? t.affordable
-                      : t.overBudget}
-                  </p>
-                </div>
-
-                <div className="bg-earth-50 rounded-2xl p-4 sm:p-5 text-center">
-                  <p className="text-xs text-earth-500 mb-1">
-                    {t.costPerAnimal}
-                  </p>
-
-                  <p className="text-xl sm:text-2xl font-bold text-earth-900">
-                    KES {result.costPerAnimal.toFixed(0)}
-                  </p>
-
-                  <p className="text-xs text-earth-400 mt-1">
-                    per animal/day
-                  </p>
-                </div>
-
-                <div className="bg-earth-50 rounded-2xl p-4 sm:p-5 text-center">
-                  <p className="text-xs text-earth-500 mb-1">
-                    {t.crudeProtein}
-                  </p>
-
-                  <p className="text-xl sm:text-2xl font-bold text-earth-900">
-                    {result.cpPct.toFixed(1)}%
-                  </p>
-
-                  <p className="text-xs text-earth-400 mt-1">
-                    {t.required}: {result.req.cp}%
-                  </p>
-                </div>
-
-                <div className="bg-earth-50 rounded-2xl p-4 sm:p-5 text-center">
-                  <p className="text-xs text-earth-500 mb-1">
-                    {t.energy}
-                  </p>
-
-                  <p className="text-xl sm:text-2xl font-bold text-earth-900">
-                    {result.energyDensity.toFixed(1)}
-                  </p>
-
-                  <p className="text-xs text-earth-400 mt-1">
-                    {t.required}: {result.req.energy}
-                  </p>
-                </div>
+                <p className="text-xs text-earth-500 mt-1">
+                  {language === 'sw'
+                    ? 'Kiasi cha chakula kinachoonyeshwa ni makadirio ya chakula kama kinavyolishwa.'
+                    : 'Quantities shown are estimated as-fed quantities.'}
+                </p>
 
               </div>
 
-              {/* RATION */}
+              <div className="divide-y divide-earth-100">
 
-              <div className="bg-white rounded-2xl border border-earth-200 overflow-hidden mb-6">
+                {result.ration.map((item) => {
 
-                <div className="px-5 py-4 bg-earth-50 border-b border-earth-100">
+                  const Icon = item.icon
 
-                  <div className="flex items-center justify-between gap-3">
+                  const feedName =
+                    language === 'sw'
+                      ? item.sw
+                      : item.name
 
-                    <div>
-                      <h4 className="font-bold text-earth-900">
-                        {t.ration}
-                      </h4>
+                  return (
 
-                      <p className="text-xs text-earth-500 mt-1">
-                        Total dry matter: {result.totalDM.toFixed(1)} kg/day
-                      </p>
-                    </div>
-
-                    <Scale className="w-5 h-5 text-bora-600" />
-
-                  </div>
-
-                </div>
-
-                <div className="divide-y divide-earth-100">
-
-                  {result.ration.map((item) => (
                     <div
                       key={item.id}
-                      className="p-4 sm:p-5"
+                      className="px-4 sm:px-6 py-4"
                     >
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between gap-3">
 
-                        <div className="w-10 h-10 rounded-xl bg-bora-50 flex items-center justify-center shrink-0">
-                          <item.icon className="w-5 h-5 text-bora-600" />
+                        <div className="flex items-center gap-3 min-w-0">
+
+                          <div className="w-10 h-10 shrink-0 rounded-lg bg-bora-50 flex items-center justify-center">
+
+                            <Icon className="w-5 h-5 text-bora-600" />
+
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <p className="font-semibold text-earth-900">
+                              {feedName}
+                            </p>
+
+                            <p className="text-xs text-earth-500">
+                              {language === 'sw'
+                                ? item.swType
+                                : item.type}
+                            </p>
+
+                          </div>
+
                         </div>
 
-                        <div className="min-w-0 flex-1">
+                        <div className="text-right shrink-0">
 
-                          <p className="font-semibold text-earth-900 text-sm sm:text-base">
-                            {item.name}
+                          <p className="font-bold text-earth-900">
+                            {item.asFedAmount} {t.kg}
                           </p>
 
                           <p className="text-xs text-earth-500">
-                            {item.type}
+                            KES {item.cost}
                           </p>
 
-                        </div>
-
-                        <div className="text-right">
-
-                          <p className="font-bold text-earth-900 text-sm sm:text-base">
-                            {item.asFedKg.toFixed(1)} kg
-                          </p>
-
-                          <p className="text-[11px] text-earth-400">
-                            as-fed
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 mt-3 pl-[52px]">
-
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-earth-400">
-                            DM
-                          </p>
-
-                          <p className="text-xs font-semibold text-earth-700">
-                            {item.amountDM.toFixed(1)} kg
-                          </p>
-                        </div>
-
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-earth-400">
-                            Share
-                          </p>
-
-                          <p className="text-xs font-semibold text-earth-700">
-                            {item.percentage.toFixed(0)}%
-                          </p>
-                        </div>
-
-                        <div className="text-right">
-                          <p className="text-[10px] uppercase tracking-wide text-earth-400">
-                            Cost
-                          </p>
-
-                          <p className="text-xs font-semibold text-bora-700">
-                            KES {item.cost.toFixed(0)}
-                          </p>
                         </div>
 
                       </div>
 
                     </div>
-                  ))}
 
-                </div>
+                  )
+                })}
 
-                <div className="px-5 py-4 bg-earth-50 border-t border-earth-100 flex justify-between items-center">
+              </div>
+
+              <div className="px-4 sm:px-6 py-4 bg-earth-50 border-t border-earth-100">
+
+                <div className="flex justify-between items-center">
 
                   <span className="font-bold text-earth-900">
-                    {t.totalCost}
+                    {t.dailyCost}
                   </span>
 
                   <span className="text-xl font-bold text-bora-700">
-                    KES {result.totalCost.toFixed(0)}
+                    KES {result.totalCost}
                   </span>
 
                 </div>
-
-              </div>
-
-              {/* NUTRITION */}
-
-              <div className="bg-bora-50 rounded-2xl p-5 sm:p-6 mb-6">
-
-                <h4 className="font-bold text-earth-900 mb-5">
-                  Nutritional summary
-                </h4>
-
-                <div className="space-y-5">
-
-                  {[
-                    {
-                      label: t.crudeProtein,
-                      value: result.cpAdequacy,
-                    },
-                    {
-                      label: t.energy,
-                      value: result.energyAdequacy,
-                    },
-                  ].map((metric) => {
-
-                    const displayValue = Math.min(
-                      metric.value,
-                      120
-                    )
-
-                    return (
-                      <div key={metric.label}>
-
-                        <div className="flex justify-between text-sm mb-2">
-
-                          <span className="text-earth-700">
-                            {metric.label}
-                          </span>
-
-                          <span
-                            className={`font-bold ${
-                              metric.value >= 90
-                                ? 'text-bora-700'
-                                : 'text-amber-600'
-                            }`}
-                          >
-                            {Math.round(metric.value)}%
-                          </span>
-
-                        </div>
-
-                        <div className="h-2.5 bg-earth-200 rounded-full overflow-hidden">
-
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              metric.value >= 90
-                                ? 'bg-bora-500'
-                                : 'bg-amber-500'
-                            }`}
-                            style={{
-                              width: `${Math.min(
-                                displayValue,
-                                100
-                              )}%`,
-                            }}
-                          />
-
-                        </div>
-
-                      </div>
-                    )
-                  })}
-
-                </div>
-              </div>
-
-              {/* FARMER TIP */}
-
-              <div className="bg-earth-50 rounded-2xl p-5 mb-7">
-
-                <div className="flex items-start gap-3">
-
-                  <Info className="w-5 h-5 text-bora-600 shrink-0 mt-0.5" />
-
-                  <div>
-
-                    <h4 className="font-bold text-earth-900">
-                      {t.farmerTip}
-                    </h4>
-
-                    <p className="text-sm text-earth-600 mt-1 leading-relaxed">
-                      {t.farmerTipText}
-                    </p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* ACTIONS */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    alert(
-                      'Saving feeds will be connected to the BalanceBora farmer database in the next version.'
-                    )
-                  }}
-                  className="inline-flex justify-center items-center gap-2 px-6 py-3.5 bg-bora-600 text-white font-bold rounded-xl hover:bg-bora-700 transition"
-                >
-                  <Save className="w-5 h-5" />
-                  {t.save}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="inline-flex justify-center items-center gap-2 px-6 py-3.5 bg-earth-900 text-white font-bold rounded-xl hover:bg-earth-800 transition"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                  {t.another}
-                </button>
 
               </div>
 
             </div>
-          )}
 
-        </div>
+            {/* HERD SUMMARY */}
 
-        {/* SMALL FOOTNOTE */}
+            <div className="bg-bora-50 rounded-xl p-5 sm:p-6 mb-6">
 
-        <div className="max-w-3xl mx-auto mt-6 text-center">
-          <p className="text-xs text-earth-400 leading-relaxed">
-            BalanceBora results are currently a demonstration. Feed
-            formulations should be validated against appropriate animal
-            nutrient requirements and locally available ingredient analyses
-            before commercial or farm use.
-          </p>
-        </div>
+              <div className="flex items-start gap-3">
+
+                <Users className="w-6 h-6 text-bora-600 shrink-0" />
+
+                <div>
+
+                  <h4 className="font-bold text-earth-900">
+                    {t.wholeHerd}
+                  </h4>
+
+                  <p className="text-sm text-earth-600 mt-1">
+
+                    {language === 'sw'
+                      ? `Una ${result.numberOfAnimals} ${result.req.sw}. Gharama ya chakula inakadiriwa kuwa KES ${result.totalHerdCost} kwa siku.`
+                      : `You have ${result.numberOfAnimals} ${result.req.name}${result.numberOfAnimals !== 1 ? 's' : ''}. Estimated feed cost is KES ${result.totalHerdCost} per day.`}
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* WHY */}
+
+            <div className="bg-white rounded-2xl border border-earth-200 p-5 sm:p-6 mb-6">
+
+              <div className="flex items-start gap-3">
+
+                <div className="w-10 h-10 rounded-xl bg-bora-100 flex items-center justify-center shrink-0">
+
+                  <Lightbulb className="w-5 h-5 text-bora-700" />
+
+                </div>
+
+                <div>
+
+                  <h4 className="font-bold text-earth-900 mb-2">
+                    {t.whyFeed}
+                  </h4>
+
+                  <p className="text-sm text-earth-600 leading-relaxed">
+                    {t.explanation}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* NUTRITION */}
+
+            <div className="bg-white rounded-2xl border border-earth-200 p-5 sm:p-6 mb-6">
+
+              <div className="flex items-center gap-2 mb-5">
+
+                <Scale className="w-5 h-5 text-bora-600" />
+
+                <h4 className="font-bold text-earth-900">
+                  {t.nutritionCheck}
+                </h4>
+
+              </div>
+
+              <div className="space-y-5">
+
+                {[
+                  {
+                    label: t.dryMatter,
+                    value:
+                      (result.totalDM /
+                        result.req.dm) *
+                      100,
+                  },
+
+                  {
+                    label: t.protein,
+                    value:
+                      (result.cpPct /
+                        result.req.cp) *
+                      100,
+                  },
+
+                  {
+                    label: t.energy,
+                    value:
+                      (result.energyDensity /
+                        result.req.energy) *
+                      100,
+                  },
+                ].map((metric) => {
+
+                  const value = Math.min(
+                    Math.max(
+                      metric.value,
+                      0
+                    ),
+                    100
+                  )
+
+                  return (
+
+                    <div key={metric.label}>
+
+                      <div className="flex justify-between text-sm mb-2">
+
+                        <span className="text-earth-700">
+                          {metric.label}
+                        </span>
+
+                        <span
+                          className={`font-semibold ${
+                            value >= 90
+                              ? 'text-bora-600'
+                              : 'text-amber-600'
+                          }`}
+                        >
+                          {Math.round(value)}%
+                        </span>
+
+                      </div>
+
+                      <div className="h-2.5 bg-earth-200 rounded-full overflow-hidden">
+
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            value >= 90
+                              ? 'bg-bora-500'
+                              : 'bg-amber-500'
+                          }`}
+                          style={{
+                            width: `${value}%`,
+                          }}
+                        />
+
+                      </div>
+
+                    </div>
+
+                  )
+                })}
+
+              </div>
+
+            </div>
+
+            {/* WHATSAPP */}
+
+            <button
+              type="button"
+              onClick={shareWhatsApp}
+              className="w-full mb-5 inline-flex justify-center items-center gap-2 px-6 py-4 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-colors shadow-lg"
+            >
+
+              <MessageCircle className="w-5 h-5" />
+
+              {t.whatsapp}
+
+            </button>
+
+            {/* NOTICE */}
+
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4 mb-8">
+
+              <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+
+              <p className="text-sm text-amber-800 leading-relaxed">
+                {t.demoNotice}
+              </p>
+
+            </div>
+
+            {/* RESET */}
+
+            <div className="flex justify-center">
+
+              <button
+                type="button"
+                onClick={reset}
+                className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-8 py-4 bg-earth-900 text-white font-bold rounded-full hover:bg-earth-800 transition-all"
+              >
+
+                <RefreshCw className="w-5 h-5" />
+
+                {t.another}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
 
       </div>
     </section>
